@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+
+  # db related
+#  db_empdept:
+#    container_name: db_empdept
+#    restart: always
+#    image: oscarfonts/h2
+#    ports:
+#      - "1521:1521"
+#      - "81:81"
+##    environment:
+##      IFEXISTS: true
+##      POSTGRES_PASSWORD: Bi@Mind
+##      POSTGRES_USER: biomind
+##      PGDATA: /var/lib/postgresql/data/pgdata
+#    volumes:
+#      - ./db_empdept/data:/opt/h2-data
+#    networks:
+#      - empdept-network
+
+  empdept:
+    container_name: empdept
+    restart: unless-stopped
+    image: openjdk:8-jdk-alpine
+#    depends_on:
+#      - db_empdept
+    volumes:
+#      - ./spring-data:/usr/share/data
+      - ./target/empdept-0.0.1-SNAPSHOT.jar:/empdept/empdept-0.0.1-SNAPSHOT.jar
+      - ~/.m2:/root/.m2
+    ports:
+      - "8087:8087"
+    command:
+      [java,'-jar',-Dspring.profiles.active=prod,'/empdept/empdept-0.0.1-SNAPSHOT.jar']
+#    networks:
+#      - empdept-network
+
+
+#bridge docker network
+#networks:
+#  empdept-network:
+#    driver: bridge
+
