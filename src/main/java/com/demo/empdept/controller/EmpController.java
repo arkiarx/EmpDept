@@ -1,6 +1,7 @@
 package com.demo.empdept.controller;
 
 import com.demo.empdept.entity.Emp;
+import com.demo.empdept.exceptions.EmpNotFoundException;
 import com.demo.empdept.model.ResultMessage;
 import com.demo.empdept.service.IEmpService;
 import org.slf4j.Logger;
@@ -24,7 +25,6 @@ public class EmpController {
     @ResponseBody
     public ResultMessage addEmp(@RequestBody Emp emp){
         ResultMessage msg = new ResultMessage();
-
         boolean bFlag = empService.createEmp(emp);
         if(bFlag){
             msg.setErrCode(100);
@@ -42,13 +42,22 @@ public class EmpController {
     public ResultMessage modifyEmp(@RequestBody Emp emp){
         ResultMessage msg = new ResultMessage();
 
-        boolean bFlag = empService.modifyEmp(emp);
+        boolean bFlag = false;
+        try{
+            bFlag = empService.modifyEmp(emp);
+        }catch(EmpNotFoundException ex) {
+            msg.setErrCode(-999);
+            msg.setErrMsg(ex.getMessage());
+        }catch(Exception ex){
+            msg.setErrCode(-999);
+            msg.setErrMsg("failed");
+        }
         if(bFlag){
             msg.setErrCode(100);
             msg.setErrMsg("success");
         }else{
             msg.setErrCode(-999);
-            msg.setErrMsg("failed");
+            msg.setErrMsg("parameter illegal!");
         }
 
         return msg;
@@ -59,21 +68,25 @@ public class EmpController {
     public ResultMessage delEmp(@PathVariable("empId") long empId){
         ResultMessage msg = new ResultMessage();
 
-        boolean bFlag = empService.deleteEmp(empId);
+        boolean bFlag = false;
+        try{
+            bFlag = empService.deleteEmp(empId);
+        }catch (EmpNotFoundException ex){
+            msg.setErrCode(-999);
+            msg.setErrMsg(ex.getMessage());
+        }catch(Exception ex){
+            msg.setErrCode(-999);
+            msg.setErrMsg("failed");
+        }
         if(bFlag){
             msg.setErrCode(100);
             msg.setErrMsg("success");
         }else{
             msg.setErrCode(-999);
-            msg.setErrMsg("failed");
+            msg.setErrMsg("parameter illegal");
         }
 
         return msg;
     }
 
-    @GetMapping("/list")
-    @ResponseBody
-    public List<Emp> list(){
-        return empService.listEmp();
-    }
 }

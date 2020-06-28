@@ -2,6 +2,7 @@ package com.demo.empdept.service.impl;
 
 import com.demo.empdept.entity.Dept;
 import com.demo.empdept.exceptions.DeptExistedException;
+import com.demo.empdept.exceptions.DeptNotFoundException;
 import com.demo.empdept.repository.IDeptRepostitory;
 import com.demo.empdept.service.IDeptService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +23,12 @@ public class DeptServiceImpl implements IDeptService {
         if(optDept.isPresent()){
             throw new DeptExistedException();
         }
-        Dept saved = deptRepository.save(dept);
-        if(null == saved){
-            return false;
-        }else{
-            return true;
-        }
+        deptRepository.save(dept);
+        return true;
     }
 
     @Override
-    public boolean modifyDept(Dept dept) {
+    public boolean modifyDept(Dept dept) throws DeptNotFoundException {
         if(null == dept) return false;
         Optional<Dept> optDept = deptRepository.findById(dept.getDeptId());
         if(optDept.isPresent()){
@@ -40,12 +37,12 @@ public class DeptServiceImpl implements IDeptService {
             deptRepository.save(curDept);
             return true;
         }else{
-            return false;
+            throw new DeptNotFoundException();
         }
     }
 
     @Override
-    public boolean deleteDept(int deptId) {
+    public boolean deleteDept(int deptId) throws DeptNotFoundException{
         if(deptId <= 0){
             return false;
         }
@@ -54,7 +51,7 @@ public class DeptServiceImpl implements IDeptService {
             deptRepository.deleteById(deptId);
             return true;
         }else{
-            return false;
+            throw new DeptNotFoundException();
         }
     }
 }

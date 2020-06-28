@@ -31,6 +31,9 @@ public class EmpDeptServiceImpl implements IEmpDeptService {
     @Override
     public List<EmpDept> listEmpDeptPage(QueryModel qModel, int page) {
 //        Pageable pageable = PageRequest.of(page, 10);
+        if(null == qModel || 0 > page){
+            return null;
+        }
         Pageable pageable = PageRequest.of(page,10);
 
         Specification<EmpDept> spec = new Specification<EmpDept>() {
@@ -56,18 +59,11 @@ public class EmpDeptServiceImpl implements IEmpDeptService {
 
                 Predicate[] p = new Predicate[list.size()];
                 return query.where(list.toArray(p)).getRestriction();
-//                return cb.and(list.toArray(p));
             }
         };
-
         Page<EmpDept> pageObjs = empDeptRepository.findAll(spec, pageable);
-
         List<EmpDept> pageList = pageObjs.getContent();
-
         logger.info("pageList size() : " + pageList.size());
-
-
-
         return pageList;
     }
 }

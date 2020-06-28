@@ -2,6 +2,7 @@ package com.demo.empdept.controller;
 
 import com.demo.empdept.entity.Dept;
 import com.demo.empdept.exceptions.DeptExistedException;
+import com.demo.empdept.exceptions.DeptNotFoundException;
 import com.demo.empdept.model.ResultMessage;
 import com.demo.empdept.service.IDeptService;
 import org.slf4j.Logger;
@@ -25,11 +26,16 @@ public class DeptController {
         ResultMessage msg = new ResultMessage();
         boolean bFlag = false;
         try {
-            deptService.createDept(dept);
-            msg.setErrCode(100);
-            msg.setErrMsg("success");
+            bFlag = deptService.createDept(dept);
+            if(bFlag) {
+                msg.setErrCode(100);
+                msg.setErrMsg("success");
+            }else{
+                msg.setErrCode(-999);
+                msg.setErrMsg("parameter illegal");
+            }
         }catch(DeptExistedException ex){
-            msg.setErrCode(-900);
+            msg.setErrCode(-999);
             msg.setErrMsg(ex.getMessage());
         }catch(Exception ex){
             msg.setErrCode(-999);
@@ -43,13 +49,22 @@ public class DeptController {
     @ResponseBody
     public ResultMessage updateDept(@RequestBody Dept dept){
         ResultMessage msg = new ResultMessage();
-        boolean bFlag = deptService.modifyDept(dept);
+        boolean bFlag = false;
+        try{
+            bFlag = deptService.modifyDept(dept);
+        }catch(DeptNotFoundException ex){
+            msg.setErrCode(-999);
+            msg.setErrMsg(ex.getMessage());
+        }catch(Exception ex){
+            msg.setErrCode(-999);
+            msg.setErrMsg("failed");
+        }
         if(bFlag){
             msg.setErrCode(100);
             msg.setErrMsg("success");
         }else{
             msg.setErrCode(-999);
-            msg.setErrMsg("failed");
+            msg.setErrMsg("parameter illegal");
         }
         return msg;
     }
@@ -58,14 +73,23 @@ public class DeptController {
     @ResponseBody
     public ResultMessage delDept(@PathVariable("deptId") int deptId){
         ResultMessage msg = new ResultMessage();
-        boolean bFlag = deptService.deleteDept(deptId);
+        boolean bFlag = false;
+        try{
+            bFlag = deptService.deleteDept(deptId);
+        }catch(DeptNotFoundException ex){
+            msg.setErrCode(-999);
+            msg.setErrMsg(ex.getMessage());
+        }catch(Exception ex){
+            msg.setErrCode(-999);
+            msg.setErrMsg("failed");
+        }
         if(bFlag){
             msg.setErrCode(100);
             msg.setErrMsg("success");
         }
         else{
             msg.setErrCode(-999);
-            msg.setErrMsg("failed");
+            msg.setErrMsg("parameter illegal");
         }
         return msg;
     }
