@@ -2,23 +2,54 @@ version: '3'
 
 services:
 
+  #redis
+  redis:
+    image: "redis:latest"
+    container_name: empdept_redis
+    command: redis-server --requirepass redis_pass
+    ports:
+      - "6379:6379"
+    volumes:
+      - $PWD/redis-data:/var/lib/redis
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      -empdept-network
+
+  #message queue
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: mq_empdept
+    ports:
+      - 15673:15672
+      - 5673:5672
+    restart: always
+    #volumes setting
+    volumes:
+      - .$PWD/mq_data:/var/lib/rabbitmq
+    networks:
+      -empdept-network
+
+
   # db related
-#  db_empdept:
-#    container_name: db_empdept
-#    restart: always
-#    image: oscarfonts/h2
-#    ports:
-#      - "1521:1521"
-#      - "81:81"
-##    environment:
-##      IFEXISTS: true
-##      POSTGRES_PASSWORD: Bi@Mind
-##      POSTGRES_USER: biomind
-##      PGDATA: /var/lib/postgresql/data/pgdata
-#    volumes:
-#      - ./db_empdept/data:/opt/h2-data
-#    networks:
-#      - empdept-network
+  db_empdept:
+      #构建mysql镜像
+      image: mysql:latest
+      container_name: empdept_db # 容器名
+      command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci #设置utf8字符集
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: root #root管理员用户密码
+      ports:
+        - '6606:3306'  #host物理直接映射端口为6606
+      volumes:
+        #mysql数据库挂载到host物理机目录/e/docker/mysql/data/db
+        - "/e/docker/mysql/data/db:/var/lib/mysql"
+        #容器的配置目录挂载到host物理机目录/e/docker/mysql/data/conf
+        - "/e/docker/mysql/data/conf:/etc/mysql/conf.d"
+    networks:
+      - empdept-network
 
   empdept:
     container_name: empdept
@@ -34,12 +65,12 @@ services:
       - "8087:8087"
     command:
       [java,'-jar',-Dspring.profiles.active=prod,'/empdept/empdept-0.0.1-SNAPSHOT.jar']
-#    networks:
-#      - empdept-network
+    networks:
+      - empdept-network
 
 
 #bridge docker network
-#networks:
-#  empdept-network:
-#    driver: bridge
+networks:
+  empdept-network:
+    driver: bridge
 
